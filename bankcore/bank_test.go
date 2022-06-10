@@ -90,3 +90,30 @@ func TestStatement(t *testing.T) {
 		t.Error("statement doesn't have the proper format")
 	}
 }
+
+func TestTransfer(t *testing.T) {
+	account1 := Account{
+		Customer: Customer{
+			Name:    "John",
+			Address: "Los Angeles, California",
+			Phone:   "(213) 555 0147",
+		},
+		Number:  1001,
+		Balance: 100,
+	}
+
+	account2 := Account{
+		Customer: Customer{
+			Name:    "Tom",
+			Address: "Mountain View, California",
+			Phone:   "(213) 666 3728",
+		},
+		Number:  1002,
+		Balance: 0,
+	}
+
+	err := Transfer(&account1, &account2, 100)
+	if err != nil {
+		t.Error(err)
+	}
+}

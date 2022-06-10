@@ -44,3 +44,18 @@ func (account *Account) Withdraw(amount float64) error {
 func (account *Account) Statement() string {
 	return fmt.Sprintf("%v - %v - %v", account.Number, account.Name, account.Balance)
 }
+
+func Transfer(from, to *Account, amount float64) error {
+	if amount <= 0 {
+		return errors.New("the amount to transfer should be greater than zero")
+	}
+
+	if from.Balance < amount {
+		return errors.New("the amount to transfer is greater than the balance")
+	}
+
+	from.Balance -= amount
+	to.Balance += amount
+
+	return nil
+}
