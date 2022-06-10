@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"kopever/bankcore/bank"
 	"log"
@@ -8,26 +9,29 @@ import (
 	"strconv"
 )
 
-var accounts = map[float64]*bank.Account{}
+var accounts = map[float64]*CustomAccount{}
 
 func main() {
-	accounts[1001] = &bank.Account{
-		Customer: bank.Customer{
-			Name:    "John",
-			Address: "Los Angeles, California",
-			Phone:   "(213) 555 0147",
+	accounts[1001] = &CustomAccount{
+		Account: &bank.Account{
+			Customer: bank.Customer{
+				Name:    "John",
+				Address: "Los Angeles, California",
+				Phone:   "(213) 555 0147",
+			},
+			Number: 1001,
 		},
-		Number:  1001,
-		Balance: 500,
 	}
 
-	accounts[1002] = &bank.Account{
-		Customer: bank.Customer{
-			Name:    "Tom",
-			Address: "Mountain View, California",
-			Phone:   "(213) 666 3728",
+	accounts[1002] = &CustomAccount{
+		Account: &bank.Account{
+			Customer: bank.Customer{
+				Name:    "Mark",
+				Address: "Irvine, California",
+				Phone:   "(949) 555 0198",
+			},
+			Number: 1002,
 		},
-		Number: 1002,
 	}
 
 	http.HandleFunc("/statement", statement)
@@ -52,9 +56,25 @@ func statement(w http.ResponseWriter, req *http.Request) {
 		if !ok {
 			fmt.Fprintf(w, "Account with number %v can't be found!", number)
 		} else {
+			// json.NewEncoder(w).Encode(bank.Statement(account))
 			fmt.Fprint(w, account.Statement())
 		}
 	}
+}
+
+// CustomAccount ...
+type CustomAccount struct {
+	*bank.Account
+}
+
+// Statement ...
+func (c *CustomAccount) Statement() string {
+	json, err := json.Marshal(c)
+	if err != nil {
+		return err.Error()
+	}
+
+	return string(json)
 }
 
 func deposit(w http.ResponseWriter, req *http.Request) {
@@ -143,7 +163,7 @@ func transfer(w http.ResponseWriter, req *http.Request) {
 			if amount, err := strconv.ParseFloat(amountqs, 64); err != nil {
 				fmt.Fprintf(w, "Invalid amount number!")
 			} else {
-				err := bank.Transfer(fromAccount, toAccount, amount)
+				err := fromAccount.Transfer(amount, toAccount.Account)
 				if err != nil {
 					fmt.Fprint(w, err)
 				} else {

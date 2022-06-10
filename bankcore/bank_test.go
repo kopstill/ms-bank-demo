@@ -112,8 +112,10 @@ func TestTransfer(t *testing.T) {
 		Balance: 0,
 	}
 
-	err := Transfer(&account1, &account2, 100)
-	if err != nil {
-		t.Error(err)
+	account1.Deposit(100)
+	err := account1.Transfer(50, &account2)
+
+	if account1.Balance != 50 && account2.Balance != 50 {
+		t.Error("transfer from account A to account B is not working", err)
 	}
 }
